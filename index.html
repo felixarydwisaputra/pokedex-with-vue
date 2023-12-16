@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PokeDex | Websites</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <style>
+        body{
+            background-color: rgb(233, 233, 233);
+        }
+
+        .cursor{
+            cursor: pointer;
+        }
+    </style>
+  </head>
+  <body>
+
+    <section id="app" class="pb-5 my-2">
+
+        <header>
+            <div class="container mb-5 pb-5">
+                <div class="row justify-content-center">
+                    <div class="col-6">
+                        <img src="img/poke.png" alt="">
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-8">
+                        <input type="email" class="form-control mb-3" id="exampleInputEmail1" placeholder="search pokemon..." v-model="search">
+                        <p>Suggested Pokemon : 
+                            <span v-for="item in suggestPokemon" @click="getDetailPokemon(item.name)" class="cursor" v-if="suggestPokemon.length > 0">{{item.name}} | </span>
+                            <span v-else> </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section id="main my-5 py-5">
+            <div class="container">
+                <div class="row" v-show="!isDetail">
+                    <div class="col-3 mb-4" v-for="item in allPokemon">
+                        <div class="card" style="width: 100%;" @click="getDetailPokemon(item.name)">
+                            <img :src="item.sprites.front_default" class="card-img-top" alt="...">
+                            <div class="card-body">
+                              <h4 class="card-text text-center">{{item.name}}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center" v-show="isDetail">
+                    <div class="row">
+                        <div class="col-5">
+                            <div class="card" style="width: 100%;" @click="getDetailPokemon(item.name)">
+                                <img :src="detailPokemonImg" class="card-img-top" alt="...">
+                            </div>
+                        </div>
+                        <div class="col-7">
+                            <h1 class="mb-4">Name Pokemon : {{detailPokemonName}}</h1>
+                            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Et asperiores, esse porro laborum a repudiandae saepe dignissimos, id, blanditiis provident dicta tempora ratione consequuntur voluptas veniam harum vel consectetur explicabo incidunt ipsum officiis sapiente iure quod exercitationem. Architecto earum laborum ad optio doloremque iusto doloribus, autem, delectus molestiae reiciendis et. Delectus animi nisi facere tenetur praesentium ea illo corrupti molestiae. Dicta nobis iste accusamus vel vero illo quos expedita necessitatibus repudiandae, at dolorum? Reiciendis similique delectus sint? Odio, quis. Quae nemo eaque tempore animi perferendis magni fuga ratione explicabo totam nostrum accusamus, atque labore, tenetur error in hic culpa quibusdam? <br> <br> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sint, doloribus quos repellendus aliquam sapiente repudiandae! Nihil facere blanditiis eligendi sed aspernatur molestiae ea odio laudantium ducimus ad, laborum aperiam, perspiciatis dolor alias pariatur cupiditate facilis minus excepturi non dolorem, ullam maiores doloremque temporibus animi. Rerum autem commodi ex explicabo facere!</p>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center mt-5">
+                        <div class="col-6">
+                            <button class="btn btn-outline-danger w-100" @click="isDetail = false">Kembali</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <script type="module">
+        import {createApp} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+        createApp({
+            data(){
+                return {
+                    allPokemon: [],
+                    isDetail: false,
+                    detailPokemonImg: '',
+                    detailPokemonName: '',
+                    search: '',
+                    searchPoke: [],
+                    suggestPokemon: ''
+                }
+            },
+            methods:{
+                async getAllPokemon(){
+                    const response = await fetch('https://pokeapi.co/api/v2/pokemon')
+                    const data = await response.json()
+                    const result = data.results
+
+                    result.forEach(item => {
+                        this.getPokemon(item)
+                    });
+
+
+                },
+                async getPokemon(result){
+                    const response = await fetch('https://pokeapi.co/api/v2/pokemon/'+ result.name)
+                    const data = await response.json()
+
+                    this.allPokemon.push(data)
+                    this.allPokemon.sort((a,b) => a.id - b.id)
+                },
+
+                async getDetailPokemon(nameTarget){
+                    this.isDetail = true
+                    const response = await fetch('https://pokeapi.co/api/v2/pokemon/'+ nameTarget)
+                    const data = await response.json()
+
+                    this.detailPokemonImg = data.sprites.front_default
+                    this.detailPokemonName = (data.name).charAt(0).toUpperCase() + (data.name).slice(1)
+
+                    console.log(data.sprites.front_default)
+                },
+
+                async searchPokemon(){
+                    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=150')
+                    const data = await response.json()
+                    const result = data.results
+
+                    this.searchPoke = result
+
+                    console.log(this.searchPoke)
+                }
+            },
+            watch:{
+                search(){
+                    let filterPokemon = this.searchPoke.filter(item => {
+                        return item.name.includes(this.search)
+                    })
+
+                    if(this.search.length < 1){
+                        this.suggestPokemon = []
+                    } else{
+                        this.suggestPokemon = filterPokemon.slice(0,5)
+                    }
+
+                }
+            },
+            mounted(){
+                this.getAllPokemon()
+                this.searchPokemon()
+            }
+        }).mount('#app')
+
+    </script>
+  </body>
+</html>
